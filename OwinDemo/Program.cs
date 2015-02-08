@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.Owin.Hosting;
 using Owin;
 
@@ -18,7 +19,7 @@ namespace OwinDemo
 		{
 			const string uri = "http://localhost:8080";
 
-			using (WebApp.Start<Startup5>(uri))
+			using (WebApp.Start<Startup6>(uri))
 			{
 				Console.WriteLine("Started");
 				Console.ReadKey();
@@ -84,6 +85,38 @@ namespace OwinDemo
 			});
 
 			appBuilder.UseHelloWorld();
+		}
+	}
+
+	public class Startup6
+	{
+		public void Configuration(IAppBuilder appBuilder)
+		{
+			appBuilder.Use(async (environment, next) =>
+			{
+				Console.WriteLine("Requesting Path = {0}", environment.Request.Path);
+
+				await next();
+
+				Console.WriteLine("Response Status Code = {0}", environment.Response.StatusCode);
+			});
+
+			ConfigureWebApi(appBuilder);
+
+
+			appBuilder.UseHelloWorld();
+		}
+
+		private void ConfigureWebApi(IAppBuilder appBuilder)
+		{
+			var httpConfiguration = new HttpConfiguration();
+
+			httpConfiguration.Routes.MapHttpRoute(
+				"DefaultApi",
+				"api/{controller}/{id}", 
+				new {id = RouteParameter.Optional});
+
+			appBuilder.UseWebApi(httpConfiguration);
 		}
 	}
 
