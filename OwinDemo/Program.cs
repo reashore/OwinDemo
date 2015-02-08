@@ -18,7 +18,7 @@ namespace OwinDemo
 		{
 			const string uri = "http://localhost:8080";
 
-			using (WebApp.Start<Startup4>(uri))
+			using (WebApp.Start<Startup5>(uri))
 			{
 				Console.WriteLine("Started");
 				Console.ReadKey();
@@ -55,6 +55,34 @@ namespace OwinDemo
 	{
 		public void Configuration(IAppBuilder appBuilder)
 		{
+			appBuilder.UseHelloWorld();
+		}
+	}
+
+	public class Startup5
+	{
+		public void Configuration(IAppBuilder appBuilder)
+		{
+			appBuilder.Use(async (environment, next) =>
+			{
+				Console.WriteLine("*** Enviroment Variables ***");
+				foreach (var pair in environment.Environment)
+				{
+					Console.WriteLine("{0}:{1}", pair.Key, pair.Value);
+				}
+
+				await next();
+			});
+
+			appBuilder.Use(async (environment, next) =>
+			{
+				Console.WriteLine("Requesting Path = {0}", environment.Request.Path);
+
+				await next();
+
+				Console.WriteLine("Response Status Code = {0}", environment.Response.StatusCode);
+			});
+
 			appBuilder.UseHelloWorld();
 		}
 	}
